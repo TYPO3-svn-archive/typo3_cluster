@@ -26,9 +26,9 @@
 ***************************************************************/
 
 /**
- * Module 'Clusterizzami troia, vabbene maiale mi garba tanto' for the 'user_bubu' extension.
+ * Module 'Cluster management' for the 'typo3_cluster' extension.
  *
- * @author	Cuendet IT Dept <IT@cuendet.com>
+ * @author	Saverio Vigni <s.vigni@hor-net.com>, Federico Stendardi <stenda85@alice.it>
  */
 
 
