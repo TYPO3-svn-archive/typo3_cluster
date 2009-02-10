@@ -157,7 +157,11 @@
 		    <p>Our manteinace department has been informed of the problem and is working to resolve it as soon as possible, please come back in a few minutes!</p></body></html>";
 	      die;
 	    }else if(count($statArray)==0 && !$GLOBALS["TYPO3_CONF_VARS"]["SYS"]['cluster_give503']){
-	      $statArray[getenv('SERVER_NAME')]=0;
+          foreach($GLOBALS["TYPO3_CONF_VARS"]["SYS"]["nodes"] as $key=>$node){
+                if(gethostbyname($node['host']) == $_SERVER['SERVER_ADDR']){
+                    $statArray[$node['host']]=0;
+                }
+          }	      
 	    }
 	    asort($statArray);
 	    reset($statArray);
