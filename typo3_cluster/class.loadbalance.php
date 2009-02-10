@@ -38,6 +38,7 @@
 	    }
 
 	    if(strstr($_SERVER['REQUEST_URI'],'/typo3')){
+          $_GET['typo3_cluster_execute']=1;
 	      return;
 	    }
 	    if($_POST['typo3_cluster_execute'] || $_GET['typo3_cluster_execute']){	      
@@ -64,19 +65,19 @@
 	      return;
 	    }
 
-	    $timeout = 0.8;
+	    $timeout = 0.5;
 	    if($GLOBALS["TYPO3_CONF_VARS"]["SYS"]['cluster_timeout']){
 	      $timeout = $GLOBALS["TYPO3_CONF_VARS"]["SYS"]['cluster_timeout'];
 	    }
 
 	    $postData = file_get_contents("php://input");	    
 	    
-	    $opts = array(
-	      'http'=>array(
-		  'method'=>"GET",
-		  'timeout'=>$timeout
-	      )
-	    );
+	    //$opts = array(
+	    //  'http'=>array(
+		//  'method'=>"GET",
+		//  'timeout'=>$timeout
+	    //  )
+	    //);
          
         //print_r($_COOKIE);
         //check if a server cookie is set, if so that means that we need to keep the session on that server!
@@ -91,10 +92,40 @@
             
             foreach($GLOBALS["TYPO3_CONF_VARS"]["SYS"]["nodes"] as $key=>$node){	      
                 
-                $context=stream_context_create($opts);
+                //$context=stream_context_create($opts);
                 $start=$this->getmicrotime();
-                $testhandler=@fopen("http://{$node['host']}/index.php?eID=cluster_worker&action=systemLoad&typo3_cluster_execute=1","r",false,$context);	      
-                //$testhandler=@file_get_contents("http://{$node['host']}/index.php?eID=cluster_worker&action=systemLoad&typo3_cluster_execute=1",FILE_TEXT,$context);
+                $fp = fsockopen($node['host'], 80, $errno, $errstr, $timeout);
+                if ($fp) {
+                        fwrite($fp, "GET /index.php?eID=cluster_worker&action=systemLoad&typo3_cluster_execute=1 HTTP/1.0\r\n");
+                        fwrite($fp, "Host: {$node['host']}\r\n");
+                        fwrite($fp, "Connection: Close\r\n\r\n");
+
+                        stream_set_blocking($fp, TRUE);
+                        stream_set_timeout($fp,$timeout*2);
+                        $info = stream_get_meta_data($fp);                        
+                        $sysLoad='';
+                        while ((!feof($fp)) && (!$info['timed_out'])) {
+                                $sysLoad .= fgets($fp, 4096);
+                                $info = stream_get_meta_data($fp);
+                                //ob_flush;
+                                //flush();
+                        }
+                        //print_r($info);
+                        if ($info['timed_out']) {
+                                //echo "{$node['host']} timeout\n";
+                                $this->sendAlert("Alert: {$node['host']} failed to reply in $timeout sec.");
+                                unset($statArray[$node['host']]);
+                                unset($GLOBALS["TYPO3_CONF_VARS"]["SYS"]["nodes"][$key]);
+                        } else {
+                                $statArray[$node['host']]=$this->getmicrotime() - $start;
+                                if(!strstr($sysLoad,'OK')){
+                                    unset($statArray[$node['host']]);
+                                    $this->sendAlert("Alert from {$node['host']}: $sysLoad");
+                                }
+                        }
+                }
+               /* $testhandler=@fopen("http://{$node['host']}/index.php?eID=cluster_worker&action=systemLoad&typo3_cluster_execute=1","r",false,$context);
+                
                 if(isset($testhandler)&&$testhandler!==false){
                       
                   $statArray[$node['host']]=$this->getmicrotime() - $start;		  
@@ -111,7 +142,7 @@
                   $this->sendAlert("Alert: {$node['host']} failed to reply in $timeout sec.");
                   unset($statArray[$node['host']]);
                   unset($GLOBALS["TYPO3_CONF_VARS"]["SYS"]["nodes"][$key]);
-                }
+                }*/
             }
             
 	      //$this->_memcache->set('__statArray', $statArray, 0, 30);
@@ -126,7 +157,7 @@
 		    <p>Our manteinace department has been informed of the problem and is working to resolve it as soon as possible, please come back in a few minutes!</p></body></html>";
 	      die;
 	    }else if(count($statArray)==0 && !$GLOBALS["TYPO3_CONF_VARS"]["SYS"]['cluster_give503']){
-	      $statArrat[getenv('SERVER_NAME')]=0;
+	      $statArray[getenv('SERVER_NAME')]=0;
 	    }
 	    asort($statArray);
 	    reset($statArray);
