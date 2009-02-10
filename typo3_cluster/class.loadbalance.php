@@ -91,6 +91,10 @@
 	    if(!is_array($statArray) && is_array($GLOBALS["TYPO3_CONF_VARS"]["SYS"]["nodes"])){
             
             foreach($GLOBALS["TYPO3_CONF_VARS"]["SYS"]["nodes"] as $key=>$node){	      
+
+                if(gethostbyname($node['host']) == $_SERVER['SERVER_ADDR']){
+                    $localserver=$node['host'];
+                }
                 
                 //$context=stream_context_create($opts);
                 $start=$this->getmicrotime();
@@ -157,11 +161,7 @@
 		    <p>Our manteinace department has been informed of the problem and is working to resolve it as soon as possible, please come back in a few minutes!</p></body></html>";
 	      die;
 	    }else if(count($statArray)==0 && !$GLOBALS["TYPO3_CONF_VARS"]["SYS"]['cluster_give503']){
-          foreach($GLOBALS["TYPO3_CONF_VARS"]["SYS"]["nodes"] as $key=>$node){
-                if(gethostbyname($node['host']) == $_SERVER['SERVER_ADDR']){
-                    $statArray[$node['host']]=0;
-                }
-          }	      
+            $statArray[$localserver]=0;    
 	    }
 	    asort($statArray);
 	    reset($statArray);
