@@ -32,7 +32,8 @@
 
 	function setEnv(){
 	    
-	    //if no servers ar define in localconf, just skip the load balancing!
+	    //if no servers ar define in localconf, just skip the load balancing!ù
+	    
 	    if(!is_array($GLOBALS["TYPO3_CONF_VARS"]["SYS"]["nodes"])){
 	      return;
 	    }
@@ -86,7 +87,7 @@
         }else if($_GET['typo3_cluster_server']){
             $statArray[$_GET['typo3_cluster_server']]=0;
         }
-        //print_r($statArray);
+	  //print_r($statArray);
 	    //$statArray=$this->_memcache->get('__statArray');
 	    if(!is_array($statArray) && is_array($GLOBALS["TYPO3_CONF_VARS"]["SYS"]["nodes"])){
             
@@ -208,16 +209,17 @@
 	      curl_setopt($_GLOBALS['curl_connect'], CURLOPT_ENCODING, "");                        
 	      $response_content=curl_exec($_GLOBALS['curl_connect']);	    	      
 	      $header=substr($response_content,0,strpos($response_content,"\r\n\r\n"));
+		
 	      $content=substr($response_content,strpos($response_content,"\r\n\r\n")+4);
 	      //echo $header;
 	      preg_match('/Set-Cookie: (.*)?/',$header,$matches);
 	      if($matches[1]){
-            //print_r($matches[1]);
-            //if(!$_COOKIE['typo3_cluster_server']){
-            //    header('Set-Cookie: typo3_cluster_server='.key($statArray).'; path=/',false);
-            //}
-            //echo $data;
+            
             header('Set-Cookie: '.$matches[1],false); 
+	      }
+          preg_match('/Content-type: (.*)?/',$header,$matches);
+          if($matches[1]){
+            	header('Content-type: '.$matches[1],false); 
 	      }
 	      preg_match('/Location: (.*)?/',$header,$matches);	      
 	      if($matches[1]){
