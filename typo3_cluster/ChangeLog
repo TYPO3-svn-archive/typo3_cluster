@@ -1,47 +1,34 @@
-2009-02-20 12:26  echo2k
+2009-02-20  echo2k
 
+	* ext_emconf.php: version bump to 0.0.10
+	* ChangeLog:
 	* ChangeLog, class.ux_t3lib_db.php: fixed a double loop where every
 	  database entry was replicated twice on every node (thanks to Tim
 	  from TYPO3 Webdesign!)
 
-2009-02-11 17:57  echo2k
+2009-02-11  echo2k
 
 	* class.loadbalance.php, ext_emconf.php: fixed wrong content-type
 	  when load balancing and content-type was different from text/html
 	  version bump to 0.0.9
 
-2009-02-10 17:26  echo2k
+2009-02-10  echo2k
 
 	* class.loadbalance.php, ext_emconf.php: fixed a potential
 	  contition where $statArray was empty if no node replied in
 	  $timeout!
-
-2009-02-10 17:12  echo2k
-
 	* class.loadbalance.php, ext_emconf.php: fixed a possible misnaming
 	  of the cluster nodes using getenv on apache2
-
-2009-02-10 10:46  echo2k
-
 	* class.loadbalance.php, ext_emconf.php: fixed a timeout issue on
 	  class load balancer where the polling system could wait more than
 	  timeout if a read problem occured!
 
-2009-02-04 19:20  echo2k
+2009-02-04  echo2k
 
 	* mod1/index.php: Initial Release
-
-2009-02-04 19:16  echo2k
-
 	* class.loadbalance.php, class.ux_t3lib_db.php,
 	  class.ux_t3lib_extfilefunc.php: Initial Release
-
-2009-02-04 19:15  echo2k
-
 	* mod1/index.php:
-
-2009-02-04 18:51  echo2k
-
 	* ., ChangeLog, README.txt, class.loadbalance.php,
 	  class.ux_t3lib_db.php, class.ux_t3lib_extfilefunc.php, doc,
 	  doc/wizard_form.dat, doc/wizard_form.html, ext_emconf.php,
