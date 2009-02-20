@@ -1,3 +1,9 @@
+2009-02-20 12:26  echo2k
+
+	* ChangeLog, class.ux_t3lib_db.php: fixed a double loop where every
+	  database entry was replicated twice on every node (thanks to Tim
+	  from TYPO3 Webdesign!)
+
 2009-02-11 17:57  echo2k
 
 	* class.loadbalance.php, ext_emconf.php: fixed wrong content-type
