@@ -320,7 +320,7 @@ class ux_t3lib_DB extends t3lib_DB{
           /*$f=fopen("/tmp/tmp.txt","w");
           fwrite($f,$postdata);
           fclose($f);*/
-            foreach($this->_nodes as $node_ip){
+            //foreach($this->_nodes as $node_ip){
                   /*$helperPath = PATH_site."typo3conf/ext/typo3_cluster/helper.php";
                   $url = urlencode("http://".$node_ip.$this->_distributedServiceUrl."&typo3_cluster_execute=1");
                   $postdata=urlencode($postdata);
@@ -390,7 +390,7 @@ class ux_t3lib_DB extends t3lib_DB{
                             }
                       }
                 }
-            }
+            //}
             
 	}
 	
