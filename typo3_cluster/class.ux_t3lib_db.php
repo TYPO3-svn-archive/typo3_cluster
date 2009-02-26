@@ -160,8 +160,8 @@ class ux_t3lib_DB extends t3lib_DB{
 	 */
 	function exec_INSERTquery($table,$fields_values,$no_quote_fields=FALSE)	{
 		//$res = mysql_query($this->INSERTquery($table,$fields_values,$no_quote_fields), $this->link);
-		//if ($this->debugOutput)	$this->debug('exec_INSERTquery');
-		$res = $this->sql_query($this->INSERTquery($table,$fields_values,$no_quote_fields));
+		//if ($this->debugOutput)	$this->debug('exec_INSERTquery');        
+		$res = $this->sql_query($this->INSERTquery($table,$fields_values,$no_quote_fields));        
 		return $res;
 	}
 
@@ -216,8 +216,7 @@ class ux_t3lib_DB extends t3lib_DB{
 	 * @return	pointer		Result pointer / DBAL object
 	 */
 	function sql_query($query)	{
-       	
-		
+   
        //try to read the transaction log, if it exists it means that somwhere in the past we were
        //unable to performa query on a node, so we try it again!
        $data=@file_get_contents(PATH_typo3conf.'t3cluster_transaction.log');
@@ -237,20 +236,15 @@ class ux_t3lib_DB extends t3lib_DB{
         }
         //if there are multiple conenctions active to our database pool then make eavery insert and every update on every database
                         
-		if(count($this->_nodes)>0 && (!strstr($query,'SELECT'))){
+		if(count($this->_nodes)>0 && (substr($query,0,6)!='SELECT')){
                   $regexp=implode("|",$this->_table_exclusion_list);
                   $regexp="/$regexp/";
                   preg_match($regexp,$query,$matches);
                 
             
                   //if the table is not in the exclude tables array...
-                  if (!$matches[0]) {
-                
-                        //if the query is a delete query on a cache table or is not operating on a cache...
-                        if((strstr($query,'cache_') && strstr($query,'DELETE'))||!strstr($query,'cache_')) {
-                            $this->_queryPack[]=$query;
-                        }
-                       
+                  if (!$matches[0] || (substr($query,0,6)=='DELETE')) {
+                    $this->_queryPack[]=$query;   
                   }		        
 		}
 				
