@@ -1,5 +1,14 @@
+2009-02-26  echo2k
+
+	* ext_emconf.php: vaersion bump to 0.0.12
+	* class.ux_t3lib_db.php: Fixed a problem with database replication,
+	  new pages weren't replicated because of a "cache_" in a field
+	  name in pages table, now cache replication is back in place,
+	  hoping it will not slow down replication...
+
 2009-02-20  echo2k
 
+	* ChangeLog:
 	* ext_emconf.php: version bump to 0.0.10
 	* ChangeLog:
 	* ChangeLog, class.ux_t3lib_db.php: fixed a double loop where every
