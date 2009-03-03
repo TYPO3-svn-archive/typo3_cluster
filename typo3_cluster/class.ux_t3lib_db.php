@@ -49,14 +49,14 @@ class ux_t3lib_DB extends t3lib_DB{
 	function __construct(){
 
         $this->_table_exclusion_list[]='be_sessions';
-        /*$this->_table_exclusion_list[]='cache_extensions';
+        $this->_table_exclusion_list[]='cache_extensions';
         $this->_table_exclusion_list[]='cache_hash';
         $this->_table_exclusion_list[]='cache_imagesizes';
         $this->_table_exclusion_list[]='cache_md5params';
         $this->_table_exclusion_list[]='cache_pages';
         $this->_table_exclusion_list[]='cache_pagesection';
         $this->_table_exclusion_list[]='cache_pages_id';
-        $this->_table_exclusion_list[]='cache_typo3temp_log';*/
+        $this->_table_exclusion_list[]='cache_typo3temp_log';
         $this->_table_exclusion_list[]='fe_sessions';
         $this->_table_exclusion_list[]='fe_session_data';
         $this->_table_exclusion_list[]='tx_realurl_chashcache';

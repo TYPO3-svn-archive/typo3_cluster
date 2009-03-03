@@ -101,19 +101,22 @@
                 $start=$this->getmicrotime();
                 $fp = fsockopen($node['host'], 80, $errno, $errstr, $timeout);
                 if ($fp) {
+                        stream_set_blocking($fp, 0);
+                        stream_set_timeout($fp,$timeout*2);
+                        
                         fwrite($fp, "GET /index.php?eID=cluster_worker&action=systemLoad&typo3_cluster_execute=1 HTTP/1.0\r\n");
                         fwrite($fp, "Host: {$node['host']}\r\n");
                         fwrite($fp, "Connection: Close\r\n\r\n");
 
-                        stream_set_blocking($fp, TRUE);
-                        stream_set_timeout($fp,$timeout*2);
-                        $info = stream_get_meta_data($fp);                        
-                        $sysLoad='';
-                        while ((!feof($fp)) && (!$info['timed_out'])) {
+                        //$info = stream_get_meta_data($fp);                        
+                        $sysLoad='';                        
+                        while ((!feof($fp)) && (!$info['timed_out'])) {                        
                                 $sysLoad .= fgets($fp, 4096);
                                 $info = stream_get_meta_data($fp);
+                                //sleep a little...1ms
+                                usleep(100);
                                 //ob_flush;
-                                //flush();
+                                //flush();                                
                         }
                         //print_r($info);
                         if ($info['timed_out']) {
