@@ -99,7 +99,7 @@
                 
                 //$context=stream_context_create($opts);
                 $start=$this->getmicrotime();
-                $fp = fsockopen($node['host'], 80, $errno, $errstr, $timeout);
+                $fp = @fsockopen($node['host'], 80, $errno, $errstr, $timeout);
                 if ($fp) {
                         stream_set_blocking($fp, 0);
                         stream_set_timeout($fp,$timeout*2);
