@@ -225,6 +225,11 @@ class ux_t3lib_DB extends t3lib_DB{
        if(strlen($data)>1048576){ //that's 1MB of log...
            $this->sendAlert('Transaction log is bigger that 1MB! may be you have connection problems?');
        }
+       //if transaction log is bigger than 10mb, something is really wrong, delete the transaction log and inform the admin
+       if(strlen($data)>10485760){
+           unlink(PATH_typo3conf.'t3cluster_transaction.log');
+           $this->sendAlert('Transaction log is bigger that 10MB! I\'ve erased the transaction log, you should take the time to resync the databases!');           
+       }
        if($data){
             $tmp1=explode('|*|',$data);
             foreach($tmp1 as $tmpquery){
@@ -324,25 +329,37 @@ class ux_t3lib_DB extends t3lib_DB{
             
                 //$timeout=ceil(strlen($postdata)/$this->_estimateSpeed);
                 $timeout=round(strlen($postdata)/$this->_estimateSpeed);
-                //$timeout=5;
-                
-
+                //$timeout=5;                              
+                //$now=t3lib_div::milliseconds();
+                $now=time();
                 $handlers=Array();
                 $connects=curl_multi_init();	
                 foreach($this->_nodes as $node_ip){
-                      $connect=curl_init();
-                      $url="http://".$node_ip.$this->_distributedServiceUrl."&typo3_cluster_execute=1";
-                      curl_setopt($connect, CURLOPT_TIMEOUT,$timeout);
-                      curl_setopt($connect, CURLOPT_URL, $url);                  
-                      curl_setopt($connect, CURLOPT_RETURNTRANSFER, true);
-                      curl_setopt($connect, CURLOPT_HTTPHEADER, array('Expect:'));
-                      curl_setopt($connect, CURLOPT_POST, true);
-                      curl_setopt($connect, CURLOPT_POSTFIELDS, $params);
-                      curl_setopt($connect, CURLOPT_ENCODING, "");
-                      curl_multi_add_handle($connects,$connect);
-                      $handlers[]=$connect;
-                      //echo curl_exec($connect);
-                      //curl_close($connect);
+
+                      //find out if we are bombing some of the nodes because we are being bombed!
+                      $conn=file_get_contents('/dev/shm/'.$node_ip.'.dbconn');
+                      if(($now-$conn) < 5){
+                            //if the transaction has failed, put the query in a log file and try to execute it on the next load
+                            $logres=file_put_contents(PATH_typo3conf.'t3cluster_transaction.log',$params['query'].'|*|',FILE_APPEND|LOCK_EX);
+                            if(!$logres){
+                                $this->sendAlert("Unable to write to transaction log file!");
+                            }
+                      }else{
+                          $connect=curl_init();
+                          $url="http://".$node_ip.$this->_distributedServiceUrl."&typo3_cluster_execute=1";
+                          curl_setopt($connect, CURLOPT_TIMEOUT,$timeout);
+                          curl_setopt($connect, CURLOPT_URL, $url);                  
+                          curl_setopt($connect, CURLOPT_RETURNTRANSFER, true);
+                          curl_setopt($connect, CURLOPT_HTTPHEADER, array('Expect:'));
+                          curl_setopt($connect, CURLOPT_POST, true);
+                          curl_setopt($connect, CURLOPT_POSTFIELDS, $params);
+                          curl_setopt($connect, CURLOPT_ENCODING, "");
+                          curl_multi_add_handle($connects,$connect);
+                          $handlers[]=$connect;
+                          //echo curl_exec($connect);
+                          //curl_close($connect);
+                          file_put_contents('/dev/shm/'.$node_ip.'.dbconn',time());
+                    }
                 }
                 $running=null;
                 //$start=user_cuendetxsl_pi1::getmicrotime();

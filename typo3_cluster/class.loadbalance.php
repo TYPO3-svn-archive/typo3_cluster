@@ -89,6 +89,15 @@
         }
 	  //print_r($statArray);
 	    //$statArray=$this->_memcache->get('__statArray');
+        $now=time();
+        if(file_exists('/dev/shm/statarray.txt')){
+            if(($now-filemtime('/dev/shm/statarray.txt'))<60){
+                $data=file_get_contents('/dev/shm/statarray.txt');
+                $statArray=unserialize($data);
+            }else{
+                unlink('/dev/shm/statarray.txt');
+            }
+        }
 	    if(!is_array($statArray) && is_array($GLOBALS["TYPO3_CONF_VARS"]["SYS"]["nodes"])){
             
             foreach($GLOBALS["TYPO3_CONF_VARS"]["SYS"]["nodes"] as $key=>$node){	      
@@ -102,21 +111,23 @@
                 $fp = @fsockopen($node['host'], 80, $errno, $errstr, $timeout);
                 if ($fp) {
                         stream_set_blocking($fp, 0);
-                        stream_set_timeout($fp,$timeout*2);
+                        //stream_set_timeout($fp,$timeout*2);
                         
                         fwrite($fp, "GET /index.php?eID=cluster_worker&action=systemLoad&typo3_cluster_execute=1 HTTP/1.0\r\n");
                         fwrite($fp, "Host: {$node['host']}\r\n");
                         fwrite($fp, "Connection: Close\r\n\r\n");
-
-                        //$info = stream_get_meta_data($fp);                        
+                        
                         $sysLoad='';                        
                         while ((!feof($fp)) && (!$info['timed_out'])) {                        
                                 $sysLoad .= fgets($fp, 4096);
-                                $info = stream_get_meta_data($fp);
+                                //$info = stream_get_meta_data($fp);
                                 //sleep a little...1ms
                                 usleep(100);
                                 //ob_flush;
-                                //flush();                                
+                                //flush();      
+                                if(($this->getmicrotime() - $start)>($timeout*2)){
+                                    $info['timed_out']=true;
+                                }
                         }
                         //print_r($info);
                         if ($info['timed_out']) {
@@ -169,6 +180,9 @@
 	    }
 	    asort($statArray);
 	    reset($statArray);
+
+        //save my statarray in a cache file!
+        file_put_contents('/dev/shm/statarray.txt',serialize($statArray));
 	    //unset($statArray);
 	    //$statArray['xslt-develop1']=1;
 	    //print_r($statArray);
