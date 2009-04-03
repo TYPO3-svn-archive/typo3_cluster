@@ -98,8 +98,11 @@
                 unlink('/dev/shm/statarray.txt');
             }
         }
+        $updatedns=false;
 	    if(!is_array($statArray) && is_array($GLOBALS["TYPO3_CONF_VARS"]["SYS"]["nodes"])){
-            
+
+            $updatedns=true; //set a flag to signal we have to update the dns
+
             foreach($GLOBALS["TYPO3_CONF_VARS"]["SYS"]["nodes"] as $key=>$node){	      
 
                 if(gethostbyname($node['host']) == $_SERVER['SERVER_ADDR']){
@@ -186,6 +189,23 @@
 	    //unset($statArray);
 	    //$statArray['xslt-develop1']=1;
 	    //print_r($statArray);
+
+
+        //update all the dns servers with the ip of the first node, removing all the other so the dns always returns the first node
+        $cmdstring='';
+        if($GLOBALS["TYPO3_CONF_VARS"]["SYS"]["dns"] && is_array($GLOBALS["TYPO3_CONF_VARS"]["SYS"]["dns"])){            
+            foreach($GLOBALS["TYPO3_CONF_VARS"]["SYS"]["dns"] as $key=>$dns){
+                $cmdstring.="server {$dns}\n";
+                $cmdstring.="zone {$_SERVER['SERVER_NAME']}\n";
+                foreach($GLOBALS["TYPO3_CONF_VARS"]["SYS"]["nodes"] as $key=>$node){
+                    $cmdstring.="update delete {$_SERVER['SERVER_NAME']} A ".gethostbyname($node['host'])."\n";
+                }
+                $cmdstring.="update add {$_SERVER['SERVER_NAME']} 10 A ".gethostbyname(key($statArray))."\n";
+                $cmdstring.="send\n";
+                file_put_contents(PATH_site.'/typo3temp/dnsupdate.txt',$cmdstring);
+                exec('nsupdate '.PATH_site.'/typo3temp/dnsupdate.txt');
+            }
+        }
 
         //assign the first server of the array as the server cookie, so we can keep the session going on on that server
         //echo key($statArray);
