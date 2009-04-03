@@ -1,5 +1,17 @@
+2009-04-03  echo2k
+
+	* ext_emconf.php: version bump to 0.0.18
+	* class.ux_t3lib_db.php: fixed potential unlink problems with
+	  transaction log
+	* class.loadbalance.php: added ddns updating features to always
+	  serve the less loaded ip
+	* class.loadbalance.php, class.ux_t3lib_db.php, ext_emconf.php:
+	  fixed potential autobombing condition during load balancing and
+	  database replication
+
 2009-03-10  echo2k
 
+	* ChangeLog:
 	* class.loadbalance.php: Error suppression of fsockopen in load
 	  balancing
 
