@@ -228,6 +228,7 @@ class ux_t3lib_DB extends t3lib_DB{
        //if transaction log is bigger than 10mb, something is really wrong, delete the transaction log and inform the admin
        if(strlen($data)>10485760){
            unlink(PATH_typo3conf.'t3cluster_transaction.log');
+           $data='';
            $this->sendAlert('Transaction log is bigger that 10MB! I\'ve erased the transaction log, you should take the time to resync the databases!');           
        }
        if($data){
